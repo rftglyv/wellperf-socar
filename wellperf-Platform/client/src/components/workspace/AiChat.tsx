@@ -231,7 +231,7 @@ export function AiChat() {
                         <span>
                           {lang === "az" ? "Açarı əlavə edin və engine-i yenidən başladın:" : lang === "ru" ? "Добавьте ключ и перезапустите движок:" : "Add the key and restart the engine:"}
                         </span>
-                        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">engine/.env → GEMINI_API_KEY</code>
+                        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">engine/.env → OPENROUTER_API_KEY</code>
                       </AlertDescription>
                     </Alert>
                   )}

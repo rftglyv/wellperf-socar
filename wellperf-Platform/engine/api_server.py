@@ -945,18 +945,30 @@ GEMINI_MODELS = ("gemini-2.5-flash", "gemini-3.8-flash")
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent"
 
 
-def _gemini_key() -> str | None:
+def _env(name: str) -> str | None:
     import os
     import re
 
-    if os.environ.get("GEMINI_API_KEY"):
-        return os.environ["GEMINI_API_KEY"].strip()
+    if os.environ.get(name):
+        return os.environ[name].strip()
     for path in (ROOT / ".env", ROOT.parent / "server" / ".env"):
         if path.exists():
-            m = re.search(r'^GEMINI_API_KEY\s*=\s*"?([^"\n]+)"?', path.read_text(encoding="utf-8"), re.M)
+            m = re.search(rf'^{name}\s*=\s*"?([^"\n]+)"?', path.read_text(encoding="utf-8"), re.M)
             if m:
                 return m.group(1).strip()
     return None
+
+
+def _gemini_key() -> str | None:
+    return _env("GEMINI_API_KEY")
+
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+
+def _openrouter_models() -> list[str]:
+    first = _env("OPENROUTER_MODEL")
+    return [m for m in (first, "google/gemini-2.5-flash", "openai/gpt-4o-mini") if m]
 
 
 def _round(v, n=2):
@@ -1023,16 +1035,19 @@ LANG_NAMES = {"az": "Azerbaijani", "en": "English", "ru": "Russian"}
 
 @app.get("/api/chat/status")
 def chat_status():
-    return ok({"configured": bool(_gemini_key()), "models": list(GEMINI_MODELS)})
+    if _env("OPENROUTER_API_KEY"):
+        return ok({"configured": True, "provider": "openrouter", "models": _openrouter_models()})
+    return ok({"configured": bool(_gemini_key()), "provider": "gemini", "models": list(GEMINI_MODELS)})
 
 
 @app.post("/api/chat")
 def chat(body: dict):
     import requests
 
+    or_key = _env("OPENROUTER_API_KEY")
     key = _gemini_key()
-    if not key:
-        raise HTTPException(503, "GEMINI_API_KEY is not configured (server/.env or engine/.env).")
+    if not key and not or_key:
+        raise HTTPException(503, "No AI key configured: set OPENROUTER_API_KEY or GEMINI_API_KEY in engine/.env.")
     msgs = [m for m in (body.get("messages") or []) if m.get("content")][-16:]
     if not msgs or msgs[-1].get("role") != "user":
         raise HTTPException(400, "The last message must come from the user.")
@@ -1045,7 +1060,52 @@ def chat(body: dict):
         "generationConfig": {"temperature": 0.3, "maxOutputTokens": 2048},
     }
 
+    def stream_openrouter():
+        system = payload["systemInstruction"]["parts"][0]["text"]
+        messages = [{"role": "system", "content": system}] + [
+            {"role": m["role"] if m["role"] in ("user", "assistant") else "user", "content": str(m["content"])[:8000]} for m in msgs
+        ]
+        last_err = None
+        for model in _openrouter_models():
+            try:
+                with requests.post(
+                    OPENROUTER_URL,
+                    headers={"Authorization": f"Bearer {or_key}", "X-Title": "WellPerf"},
+                    json={"model": model, "messages": messages, "stream": True, "temperature": 0.3, "max_tokens": 2048},
+                    stream=True,
+                    timeout=(10, 120),
+                ) as r:
+                    if r.status_code != 200:
+                        last_err = f"{model}: HTTP {r.status_code}"
+                        continue
+                    r.encoding = "utf-8"
+                    yield f"data: {json.dumps({'model': model})}\n\n"
+                    for line in r.iter_lines(decode_unicode=True):
+                        if not line or not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            break
+                        try:
+                            chunk = json.loads(data)
+                        except ValueError:
+                            continue
+                        if chunk.get("error"):
+                            yield f"data: {json.dumps({'error': str(chunk['error'].get('message', chunk['error']))})}\n\n"
+                            return
+                        text = ((chunk.get("choices") or [{}])[0].get("delta") or {}).get("content") or ""
+                        if text:
+                            yield f"data: {json.dumps({'text': text}, ensure_ascii=False)}\n\n"
+                    yield "data: {\"done\": true}\n\n"
+                    return
+            except Exception as exc:
+                last_err = f"{model}: {type(exc).__name__}"
+        yield f"data: {json.dumps({'error': f'AI service unavailable ({last_err})'})}\n\n"
+
     def stream():
+        if or_key:
+            yield from stream_openrouter()
+            return
         last_err = None
         for model in GEMINI_MODELS:
             try:

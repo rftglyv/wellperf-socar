@@ -2,7 +2,7 @@ export type Lang = "az" | "en" | "ru";
 type D = Record<string, string>;
 
 const en: D = {
-  chat_title: "WellPerf AI", chat_sub: "Gemini · grounded on your results", chat_open: "Ask WellPerf AI",
+  chat_title: "WellPerf AI", chat_sub: "Grounded on your workspace results", chat_open: "Ask WellPerf AI",
   chat_hello: "How can I help with your wells?", chat_intro: "I can see your uploaded data, VFM predictions, PTA results and model validation. Ask about any well, number or method.",
   chat_nokey: "The Gemini API key is not configured. Add GEMINI_API_KEY to server/.env or engine/.env and restart the engine.",
   chat_placeholder: "Ask about rates, shut-ins, skin, the model…", chat_send: "Send", chat_stop: "Stop", chat_new: "New chat",
@@ -180,7 +180,7 @@ const en: D = {
 };
 
 const az: D = {
-  chat_title: "WellPerf AI", chat_sub: "Gemini · nəticələrinizə əsaslanır", chat_open: "WellPerf AI-dan soruş",
+  chat_title: "WellPerf AI", chat_sub: "İş sahəsinin nəticələrinə əsaslanır", chat_open: "WellPerf AI-dan soruş",
   chat_hello: "Quyularınızla bağlı necə kömək edim?", chat_intro: "Yüklənmiş datanı, VFM proqnozlarını, PTA nəticələrini və model validasiyasını görürəm. İstənilən quyu, rəqəm və ya metod haqqında soruşun.",
   chat_nokey: "Gemini API açarı qurulmayıb. server/.env və ya engine/.env faylına GEMINI_API_KEY əlavə edib engine-i yenidən başladın.",
   chat_placeholder: "Debit, bağlanma, skin, model haqqında soruşun…", chat_send: "Göndər", chat_stop: "Dayandır", chat_new: "Yeni söhbət",
@@ -345,7 +345,7 @@ const az: D = {
 };
 
 const ru: D = {
-  chat_title: "WellPerf AI", chat_sub: "Gemini · на основе ваших результатов", chat_open: "Спросить WellPerf AI",
+  chat_title: "WellPerf AI", chat_sub: "На основе результатов рабочей области", chat_open: "Спросить WellPerf AI",
   chat_hello: "Чем помочь по скважинам?", chat_intro: "Я вижу загруженные данные, прогнозы VFM, результаты ГДИ и валидацию модели. Спрашивайте о любой скважине, цифре или методе.",
   chat_nokey: "Ключ Gemini API не настроен. Добавьте GEMINI_API_KEY в server/.env или engine/.env и перезапустите движок.",
   chat_placeholder: "Спросите о дебитах, остановках, скине, модели…", chat_send: "Отправить", chat_stop: "Остановить", chat_new: "Новый чат",

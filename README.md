@@ -30,7 +30,7 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-Optional: set `GEMINI_API_KEY` in `wellperf-Platform/engine/.env` to enable the "Ask AI" panel.
+Optional: set `OPENROUTER_API_KEY` (or `GEMINI_API_KEY`) in `wellperf-Platform/engine/.env` to enable the "Ask AI" panel.
 
 ### Results
 - VFM oil MAPE: 2.65 % held-out, 3.72 % forward (55 tests; last-test baseline 6.0 %).
