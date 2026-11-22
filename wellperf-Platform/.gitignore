@@ -37,3 +37,4 @@ high_freq_data.csv
 # Engine workspace uploads (persisted test-day parts)
 engine/uploads/
 engine/artifacts/baseline_predictions.parquet
+engine/outputs/archive/

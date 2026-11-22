@@ -1,13 +1,27 @@
 "use client";
 
 import React from "react";
-import { ArrowDownToLine, FileCode2, FileSpreadsheet, FileText, Package } from "lucide-react";
-import { EngineStatus, exportUrl, fmt, fmtDate } from "./api";
+import { Archive, ArrowDownToLine, FileCode2, FileSpreadsheet, FileText, Package, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { ENGINE_URL, EngineStatus, engineDelete, engineGet, enginePost, exportUrl, fmt, fmtDate } from "./api";
 import { SectionHead, useReveal } from "./ui";
 import { usePrefs } from "./prefs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 
 const FILES: { name: string; key: string; needs: "vfm" | "pta"; icon: any; phase: string }[] = [
@@ -19,8 +33,143 @@ const FILES: { name: string; key: string; needs: "vfm" | "pta"; icon: any; phase
   { name: "pta_report.html", key: "f_pta_html", needs: "pta", icon: FileCode2, phase: "phase2" },
 ];
 
+type ArchiveItem = {
+  id: string;
+  created: string;
+  source: "download" | "manual";
+  period_start?: string;
+  period_end?: string;
+  wells: number;
+  field_oil?: number;
+  shut_ins: number;
+  files: string[];
+  size: number;
+};
+
+const kb = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+
+function ExportHistory({ canSave, refreshKey }: { canSave: boolean; refreshKey: number }) {
+  const { t } = usePrefs();
+  const [items, setItems] = React.useState<ArchiveItem[] | null>(null);
+  const [busy, setBusy] = React.useState(false);
+  const load = React.useCallback(() => {
+    engineGet<{ items: ArchiveItem[] }>("/api/archive")
+      .then((r) => setItems(r.items))
+      .catch(() => setItems([]));
+  }, []);
+  React.useEffect(load, [load, refreshKey]);
+  const save = async () => {
+    setBusy(true);
+    try {
+      await enginePost("/api/archive");
+      toast.success(t("ar_saved"));
+      load();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async (id: string) => {
+    try {
+      await engineDelete(`/api/archive/${id}`);
+      load();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+  return (
+    <Card className="mt-4 gap-2" data-reveal>
+      <CardHeader className="flex flex-row items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <CardTitle>{t("ar_title")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("ar_sub")}</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={save} disabled={!canSave || busy}>
+          <Archive /> {t("ar_save")}
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {items && items.length === 0 ? (
+          <Empty className="border border-dashed py-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Archive />
+              </EmptyMedia>
+              <EmptyTitle>{t("ar_empty")}</EmptyTitle>
+              <EmptyDescription>{t("ar_empty_d")}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("ar_when")}</TableHead>
+                <TableHead>{t("ar_period")}</TableHead>
+                <TableHead className="text-right">{t("ar_wells")}</TableHead>
+                <TableHead className="text-right">{t("ar_oil")}</TableHead>
+                <TableHead className="text-right">{t("ar_shutins")}</TableHead>
+                <TableHead className="text-right">{t("ar_files")}</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(items || []).map((a) => (
+                <TableRow key={a.id}>
+                  <TableCell className="font-mono text-xs">
+                    {a.created.replace("T", " ").slice(0, 16)}
+                    <Badge variant="outline" className="ml-2 font-normal text-muted-foreground">
+                      {t(a.source === "manual" ? "ar_manual" : "ar_download")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {a.period_start ? `${fmtDate(a.period_start)} → ${fmtDate(a.period_end)}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{a.wells}</TableCell>
+                  <TableCell className="text-right tabular-nums">{a.field_oil != null ? fmt(a.field_oil) : "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">{a.shut_ins}</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {a.files.length} · {kb(a.size)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button asChild size="sm" variant="ghost">
+                        <a href={`${ENGINE_URL}/api/archive/${a.id}/download`}>
+                          <ArrowDownToLine /> ZIP
+                        </a>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon-sm" variant="ghost" aria-label={t("ar_delete")}>
+                            <Trash2 />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("ar_delete_q")}</AlertDialogTitle>
+                            <AlertDialogDescription>{a.created.replace("T", " ").slice(0, 16)}</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("ar_cancel")}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => remove(a.id)}>{t("ar_delete")}</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function StepExport({ status, onDownload }: { status: EngineStatus; onDownload: (name: string) => void }) {
   const { t } = usePrefs();
+  const [histKey, setHistKey] = React.useState(0);
   const ref = useReveal<HTMLDivElement>([status.stages.vfm, status.stages.pta]);
   const ready = (n: "vfm" | "pta") => status.stages[n] === "done" && (n === "vfm" || (status.meta.pta?.results?.length || 0) > 0);
   const clean = status.meta.clean;
@@ -45,7 +194,13 @@ export function StepExport({ status, onDownload }: { status: EngineStatus; onDow
         actions={
           ready("vfm") ? (
             <Button asChild>
-              <a href={exportUrl("wellperf_deliverables.zip")} onClick={() => onDownload("wellperf_deliverables.zip")}>
+              <a
+                href={exportUrl("wellperf_deliverables.zip")}
+                onClick={() => {
+                  onDownload("wellperf_deliverables.zip");
+                  window.setTimeout(() => setHistKey((k) => k + 1), 2500);
+                }}
+              >
                 <Package /> {t("e_all")}
               </a>
             </Button>
@@ -105,6 +260,7 @@ export function StepExport({ status, onDownload }: { status: EngineStatus; onDow
           </Card>
         ))}
       </div>
+      <ExportHistory canSave={ready("vfm")} refreshKey={histKey} />
     </div>
   );
 }

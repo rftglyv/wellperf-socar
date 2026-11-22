@@ -2,6 +2,7 @@ export type Lang = "az" | "en" | "ru";
 type D = Record<string, string>;
 
 const en: D = {
+  ar_title: "Export history", ar_sub: "Every full ZIP export is archived with its period and results. Download any earlier version again.", ar_save: "Save snapshot", ar_saved: "Snapshot saved to the archive", ar_empty: "No exports yet", ar_empty_d: "Download all (.zip) or save a snapshot and it appears here.", ar_when: "Exported", ar_period: "Data period", ar_wells: "Wells", ar_oil: "Oil, STB/d", ar_shutins: "Shut-ins", ar_files: "Files", ar_manual: "snapshot", ar_download: "download", ar_delete: "Delete", ar_delete_q: "Delete this export from the archive?", ar_cancel: "Cancel",
   chat_title: "WellPerf AI", chat_sub: "Grounded on your workspace results", chat_open: "Ask WellPerf AI",
   chat_hello: "How can I help with your wells?", chat_intro: "I can see your uploaded data, VFM predictions, PTA results and model validation. Ask about any well, number or method.",
   chat_nokey: "The Gemini API key is not configured. Add GEMINI_API_KEY to server/.env or engine/.env and restart the engine.",
@@ -180,6 +181,7 @@ const en: D = {
 };
 
 const az: D = {
+  ar_title: "İxrac tarixçəsi", ar_sub: "Hər tam ZIP ixracı dövrü və nəticələri ilə arxivdə saxlanılır. İstənilən əvvəlki versiyanı yenidən yükləyin.", ar_save: "Snapşot saxla", ar_saved: "Snapşot arxivə saxlanıldı", ar_empty: "Hələ ixrac yoxdur", ar_empty_d: "Hamısını yüklə (.zip) və ya snapşot saxlayın — burada görünəcək.", ar_when: "İxrac vaxtı", ar_period: "Məlumat dövrü", ar_wells: "Quyular", ar_oil: "Neft, STB/gün", ar_shutins: "Bağlanmalar", ar_files: "Fayllar", ar_manual: "snapşot", ar_download: "yükləmə", ar_delete: "Sil", ar_delete_q: "Bu ixrac arxivdən silinsin?", ar_cancel: "Ləğv et",
   chat_title: "WellPerf AI", chat_sub: "İş sahəsinin nəticələrinə əsaslanır", chat_open: "WellPerf AI-dan soruş",
   chat_hello: "Quyularınızla bağlı necə kömək edim?", chat_intro: "Yüklənmiş datanı, VFM proqnozlarını, PTA nəticələrini və model validasiyasını görürəm. İstənilən quyu, rəqəm və ya metod haqqında soruşun.",
   chat_nokey: "Gemini API açarı qurulmayıb. server/.env və ya engine/.env faylına GEMINI_API_KEY əlavə edib engine-i yenidən başladın.",
@@ -345,6 +347,7 @@ const az: D = {
 };
 
 const ru: D = {
+  ar_title: "История выгрузок", ar_sub: "Каждая полная выгрузка ZIP сохраняется в архиве с периодом и результатами. Любую прежнюю версию можно скачать снова.", ar_save: "Сохранить снимок", ar_saved: "Снимок сохранён в архив", ar_empty: "Выгрузок пока нет", ar_empty_d: "Скачайте всё (.zip) или сохраните снимок — он появится здесь.", ar_when: "Выгружено", ar_period: "Период данных", ar_wells: "Скважины", ar_oil: "Нефть, STB/сут", ar_shutins: "Остановки", ar_files: "Файлы", ar_manual: "снимок", ar_download: "скачивание", ar_delete: "Удалить", ar_delete_q: "Удалить эту выгрузку из архива?", ar_cancel: "Отмена",
   chat_title: "WellPerf AI", chat_sub: "На основе результатов рабочей области", chat_open: "Спросить WellPerf AI",
   chat_hello: "Чем помочь по скважинам?", chat_intro: "Я вижу загруженные данные, прогнозы VFM, результаты ГДИ и валидацию модели. Спрашивайте о любой скважине, цифре или методе.",
   chat_nokey: "Ключ Gemini API не настроен. Добавьте GEMINI_API_KEY в server/.env или engine/.env и перезапустите движок.",

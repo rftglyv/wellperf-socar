@@ -32,6 +32,7 @@ import threading
 import time
 import traceback
 import uuid
+import re
 import zipfile
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -1335,12 +1336,110 @@ def vfm_preview(limit: int = 200):
         return ok({"rows": records(df.head(limit).astype({"date": str})), "total": int(len(df))})
 
 
+# ---------------------------------------------------------------------------------------------
+# Export archive: every full export is kept as a timestamped ZIP + metadata on disk
+# ---------------------------------------------------------------------------------------------
+
+ARCHIVE_DIR = ROOT / "outputs" / "archive"
+ARCHIVE_ID = re.compile(r"^\d{8}-\d{6}(-\d+)?$")
+
+
+def _archive_meta(data: bytes, source: str) -> dict:
+    from datetime import datetime
+
+    meta = S.stage_meta
+    clean_m, vfm_m = meta.get("clean", {}), meta.get("vfm", {})
+    with zipfile.ZipFile(io.BytesIO(data)) as zf:
+        files = [i.filename for i in zf.infolist()]
+    return clean_json({
+        "created": datetime.now().isoformat(timespec="seconds"),
+        "source": source,
+        "period_start": clean_m.get("period_start"),
+        "period_end": clean_m.get("period_end"),
+        "wells": len(clean_m.get("wells") or []),
+        "days": clean_m.get("days"),
+        "uploads": [p.filename for p in S.parts],
+        "field_oil": vfm_m.get("field_oil"),
+        "shut_ins": len(S.analyses or {}),
+        "files": files,
+        "size": len(data),
+    })
+
+
+def archive_save(data: bytes, source: str) -> dict:
+    from datetime import datetime
+
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    base = datetime.now().strftime("%Y%m%d-%H%M%S")
+    aid, n = base, 1
+    while (ARCHIVE_DIR / f"{aid}.zip").exists():
+        n += 1
+        aid = f"{base}-{n}"
+    meta = {"id": aid, **_archive_meta(data, source)}
+    (ARCHIVE_DIR / f"{aid}.zip").write_bytes(data)
+    (ARCHIVE_DIR / f"{aid}.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    return meta
+
+
+def _archive_path(aid: str, ext: str) -> Path:
+    if not ARCHIVE_ID.match(aid):
+        raise HTTPException(400, "Bad archive id.")
+    path = ARCHIVE_DIR / f"{aid}.{ext}"
+    if not path.exists():
+        raise HTTPException(404, "Archive entry not found.")
+    return path
+
+
+@app.get("/api/archive")
+def archive_list():
+    items = []
+    if ARCHIVE_DIR.exists():
+        for f in sorted(ARCHIVE_DIR.glob("*.json"), reverse=True):
+            try:
+                items.append(json.loads(f.read_text(encoding="utf-8")))
+            except ValueError:
+                continue
+    items.sort(key=lambda a: (a.get("created", ""), len(a.get("id", "")), a.get("id", "")), reverse=True)
+    return ok({"items": items})
+
+
+@app.post("/api/archive")
+def archive_create():
+    with LOCK:
+        if S.prepared is None or S.stage_status.get("vfm") != "done":
+            raise HTTPException(400, "Run the VFM stage first.")
+        data, _ = build_export("wellperf_deliverables.zip")
+        meta = archive_save(data, "manual")
+    return ok(meta)
+
+
+@app.get("/api/archive/{aid}/download")
+def archive_download(aid: str):
+    path = _archive_path(aid, "zip")
+    return Response(content=path.read_bytes(), media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="wellperf_{aid}.zip"'})
+
+
+@app.delete("/api/archive/{aid}")
+def archive_delete(aid: str):
+    _archive_path(aid, "zip").unlink()
+    meta = ARCHIVE_DIR / f"{aid}.json"
+    if meta.exists():
+        meta.unlink()
+    return ok({"deleted": aid})
+
+
 @app.get("/api/export/{name}")
 def export(name: str):
     with LOCK:
         if S.prepared is None:
             raise HTTPException(400, "Nothing processed yet.")
         data, mime = build_export(name)
+        if name == "wellperf_deliverables.zip":
+            try:
+                archive_save(data, "download")
+            except OSError:
+                pass
     return Response(content=data, media_type=mime,
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
