@@ -151,7 +151,7 @@ export function StepTwin({ status, well, setWell, goVFM, goPTA }: Props) {
           {/* Stage background is always dark navy, so overlay colours are fixed light-on-dark. */}
           <div className="absolute bottom-4 left-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-white/15 bg-black/55 px-3 py-2 text-xs text-white/85">
             {[
-              ["#e8b21a", t("twin_l_jacket")],
+              ["#c8372d", t("twin_l_jacket")],
               ["#4a2709", t("twin_l_res")],
               ["#5eead4", t("twin_l_flow")],
             ].map(([c, l]) => (

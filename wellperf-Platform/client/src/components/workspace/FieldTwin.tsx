@@ -51,6 +51,7 @@ const SEABED = -50;
 const SLAB = 6;
 const BOTTOM = -320;
 const PLATFORM = new THREE.Vector3(-45, 0, -35);
+const JACKET_SCALE = 1.4;
 const DOME = { x: 75, z: 50, top: -196, amp: 26, sx: 48, sz: 36 };
 const domeTop = (x: number, z: number) =>
   DOME.top - DOME.amp + DOME.amp * 2 * Math.exp(-(((x - DOME.x) ** 2) / (2 * DOME.sx ** 2) + ((z - DOME.z) ** 2) / (2 * DOME.sz ** 2)));
@@ -389,8 +390,8 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     scene.background = new THREE.Color(background);
 
     const camera = new THREE.PerspectiveCamera(34, W() / H(), 1, 4000);
-    const HOME_POS = new THREE.Vector3(110, 240, 520);
-    const HOME_TGT = new THREE.Vector3(30, -80, 25);
+    const HOME_POS = new THREE.Vector3(120, 250, 600);
+    const HOME_TGT = new THREE.Vector3(25, -60, 15);
     camera.position.copy(HOME_POS);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -440,6 +441,8 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     // ---------- materials ----------
     const M = {
       yellow: new THREE.MeshStandardMaterial({ color: 0xe8b21a, metalness: 0.35, roughness: 0.5 }),
+      jRed: new THREE.MeshStandardMaterial({ color: 0xc8372d, metalness: 0.4, roughness: 0.45 }),
+      jWhite: new THREE.MeshStandardMaterial({ color: 0xeef1f3, metalness: 0.4, roughness: 0.4 }),
       marine: new THREE.MeshStandardMaterial({ color: 0x3d4b3c, metalness: 0.1, roughness: 0.95, map: noiseTexture("#55604a", 0.5, [2, 2], 5) }),
       steel: new THREE.MeshStandardMaterial({ color: 0x9aa0a4, metalness: 0.85, roughness: 0.38 }),
       white: new THREE.MeshStandardMaterial({ color: 0xe9e7e1, metalness: 0.4, roughness: 0.45 }),
@@ -593,13 +596,19 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     // ---------- platform ----------
     const plat = new THREE.Group();
     plat.position.copy(PLATFORM);
+    plat.scale.setScalar(JACKET_SCALE);
     scene.add(plat);
     const b = new Batch();
-    const legBase = [new THREE.Vector3(-18, SEABED, -14), new THREE.Vector3(18, SEABED, -14), new THREE.Vector3(18, SEABED, 14), new THREE.Vector3(-18, SEABED, 14)];
+    const legBase = [new THREE.Vector3(-26, SEABED, -20), new THREE.Vector3(26, SEABED, -20), new THREE.Vector3(26, SEABED, 20), new THREE.Vector3(-26, SEABED, 20)];
     const legTop = [new THREE.Vector3(-11, 16, -8.5), new THREE.Vector3(11, 16, -8.5), new THREE.Vector3(11, 16, 8.5), new THREE.Vector3(-11, 16, 8.5)];
-    const levels = [SEABED, -32, -15, 2, 16];
+    const levels = [SEABED, -38, -26, -14, -3, 7, 16];
     const legAt = (i: number, y: number) => legBase[i].clone().lerp(legTop[i], (y - SEABED) / (16 - SEABED));
-    const matFor = (a: THREE.Vector3, c: THREE.Vector3) => ((a.y + c.y) / 2 > -3 ? M.yellow : M.marine);
+    // red/white banded jacket above the splash zone, marine growth below
+    const matFor = (a: THREE.Vector3, c: THREE.Vector3) => {
+      const y = (a.y + c.y) / 2;
+      if (y < -3) return M.marine;
+      return Math.floor((y + 3) / 6) % 2 ? M.jWhite : M.jRed;
+    };
     for (let i = 0; i < 4; i++)
       for (let l = 0; l < levels.length - 1; l++) {
         const a = legAt(i, levels[l]);
@@ -621,7 +630,7 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     // mudmats & piles
     legBase.forEach((p) => b.box([7, 1, 7], [p.x, SEABED + 0.5, p.z], M.marine));
     // deck legs + decks
-    legTop.forEach((p) => b.strut(p, new THREE.Vector3(p.x, 25, p.z), 1.25, M.yellow, 14));
+    legTop.forEach((p) => b.strut(p, new THREE.Vector3(p.x, 25, p.z), 1.25, M.jRed, 14));
     b.box([26, 0.7, 20], [0, 17, 0], M.grating);
     b.box([31, 1, 25], [0, 25, 0], M.grating);
     for (let z = -11; z <= 11; z += 5.5) b.box([31, 1.6, 0.6], [0, 23.9, z], M.girder);
@@ -742,7 +751,7 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     const perfMat = (c: THREE.Color) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
     WELLS.forEach((name, i) => {
       const slot = new THREE.Vector3(-2.4 + (i % 5) * 1.2, 25, -0.6 + Math.floor(i / 5) * 2.4 + 1);
-      const head = PLATFORM.clone().add(slot);
+      const head = PLATFORM.clone().add(slot.multiplyScalar(JACKET_SCALE));
       const ang = (i / WELLS.length) * Math.PI * 2 + (r() - 0.5) * 0.2;
       const rad = i % 2 ? 40 : 24;
       const tx = DOME.x + Math.cos(ang) * rad * 1.1;
