@@ -10,6 +10,7 @@ Virtual flow metering (VFM) and pressure transient analysis (PTA) for 10 offshor
 | 2 | Trained model, `.pkl` | `model/vfm_model.pkl` |
 | 3 | Notebook, all cells run, outputs shown | `notebook/WellPerf_results.ipynb` |
 | 4 | PTA plots (log-log + Bourdet derivative, Horner, MDH) | `pta_plots/*.png` (one per shut-in) |
+| – | Models, features, accuracy | `MODEL_CARD.md` |
 | – | Presentation | `WellPerf_Pitch_Deck.pptx` |
 
 ## Application (`wellperf-Platform/`)
