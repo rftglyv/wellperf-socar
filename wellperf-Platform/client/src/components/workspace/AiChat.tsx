@@ -204,16 +204,12 @@ export function AiChat() {
               </div>
               <SheetDescription className="truncate text-xs">{t("chat_sub")}</SheetDescription>
             </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => !busy && setMsgs([])}
-              title={t("chat_new")}
-              aria-label={t("chat_new")}
-              disabled={busy || !msgs.length}
-            >
-              <Plus />
-            </Button>
+            {msgs.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => !busy && setMsgs([])} disabled={busy}>
+                <Plus />
+                {t("chat_new")}
+              </Button>
+            )}
           </SheetHeader>
 
           <ScrollArea className="min-h-0 flex-1">

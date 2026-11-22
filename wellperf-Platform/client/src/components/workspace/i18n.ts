@@ -183,7 +183,7 @@ const az: D = {
   chat_title: "WellPerf AI", chat_sub: "Gemini · nəticələrinizə əsaslanır", chat_open: "WellPerf AI-dan soruş",
   chat_hello: "Quyularınızla bağlı necə kömək edim?", chat_intro: "Yüklənmiş datanı, VFM proqnozlarını, PTA nəticələrini və model validasiyasını görürəm. İstənilən quyu, rəqəm və ya metod haqqında soruşun.",
   chat_nokey: "Gemini API açarı qurulmayıb. server/.env və ya engine/.env faylına GEMINI_API_KEY əlavə edib engine-i yenidən başladın.",
-  chat_placeholder: "Hasilat, qapanma, skin, model haqqında soruşun…", chat_send: "Göndər", chat_stop: "Dayandır", chat_new: "Yeni söhbət",
+  chat_placeholder: "Debit, bağlanma, skin, model haqqında soruşun…", chat_send: "Göndər", chat_stop: "Dayandır", chat_new: "Yeni söhbət",
   chat_error: "Cavab alınmadı:", chat_empty: "Cavab gəlmədi — yenidən cəhd edin.", chat_stopped: "Dayandırıldı.",
   chat_foot: "Cavablar cari iş sahəsinin nəticələrinə əsaslanır · Ctrl+K",
   chat_s1: "Yüklənən dövr üçün VFM nəticələrini xülasə et", chat_s2: "Hansı quyu stimulyasiya namizədidir və niyə?",
