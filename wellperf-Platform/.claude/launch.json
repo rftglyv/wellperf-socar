@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "engine",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "api_server:app", "--port", "8000", "--app-dir", "engine"],
+      "port": 8000
+    },
+    {
+      "name": "client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "client", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

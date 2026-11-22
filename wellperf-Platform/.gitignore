@@ -1,0 +1,39 @@
+# Dependency directories
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+
+# Environment variables & secrets (Never commit credentials!)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+
+# OS & Editor artifacts
+.DS_Store
+**/.DS_Store
+__MACOSX/
+**/__MACOSX/
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+**/.coverage
+
+# Huge raw data & parquet caches (>100MB GitHub limit)
+high_freq_data.csv
+**/high_freq_data.csv
+*.parquet
+**/*.parquet
+*.JPG
+**/*.JPG
+
+# Engine workspace uploads (persisted test-day parts)
+engine/uploads/
+engine/artifacts/baseline_predictions.parquet

@@ -1,0 +1,259 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------- shadcn/ui tokens (WellPerf: zinc neutrals, petrol primary, data-series charts) ---------- */
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240 10% 3.9%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(240 10% 3.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(240 10% 3.9%);
+  --primary: hsl(187 83% 23%);
+  --primary-foreground: hsl(0 0% 98%);
+  --secondary: hsl(240 4.8% 95.9%);
+  --secondary-foreground: hsl(240 5.9% 10%);
+  --muted: hsl(240 4.8% 95.9%);
+  --muted-foreground: hsl(240 3.8% 46.1%);
+  --accent: hsl(240 4.8% 95.9%);
+  --accent-foreground: hsl(240 5.9% 10%);
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --warning: hsl(32 95% 44%);
+  --success: hsl(142 72% 29%);
+  --border: hsl(240 5.9% 90%);
+  --input: hsl(240 5.9% 90%);
+  --ring: hsl(187 83% 23%);
+  --radius: 0.5rem;
+  --chart-1: hsl(142 72% 34%);
+  --chart-2: hsl(221 83% 53%);
+  --chart-3: hsl(21 90% 48%);
+  --chart-4: hsl(240 5% 26%);
+  --chart-5: hsl(330 81% 55%);
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(187 83% 23%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(187 83% 23%);
+}
+
+.dark {
+  --background: hsl(240 10% 3.9%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(240 10% 3.9%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(240 10% 3.9%);
+  --popover-foreground: hsl(0 0% 98%);
+  --primary: hsl(187 50% 52%);
+  --primary-foreground: hsl(240 10% 3.9%);
+  --secondary: hsl(240 3.7% 15.9%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(240 3.7% 15.9%);
+  --muted-foreground: hsl(240 5% 64.9%);
+  --accent: hsl(240 3.7% 15.9%);
+  --accent-foreground: hsl(0 0% 98%);
+  --destructive: hsl(0 72% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --warning: hsl(38 92% 55%);
+  --success: hsl(152 60% 48%);
+  --border: hsl(240 3.7% 15.9%);
+  --input: hsl(240 3.7% 15.9%);
+  --ring: hsl(187 50% 52%);
+  --chart-1: hsl(164 66% 50%);
+  --chart-2: hsl(214 100% 65%);
+  --chart-3: hsl(29 100% 62%);
+  --chart-4: hsl(240 5% 84%);
+  --chart-5: hsl(255 92% 76%);
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(187 50% 52%);
+  --sidebar-primary-foreground: hsl(240 10% 3.9%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(187 50% 52%);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ---------- legacy palette used by /legacy and older components ---------- */
+:root,
+html.light {
+    --wp-canvas: 248 250 252;
+    --wp-z-950: 255 255 255;
+    --wp-z-900: 241 245 249;
+    --wp-z-800: 226 232 240;
+    --wp-z-700: 203 213 225;
+    --wp-z-600: 100 116 139;
+    --wp-z-500: 100 116 139;
+    --wp-z-400: 71 85 105;
+    --wp-z-300: 51 65 85;
+    --wp-z-200: 30 41 59;
+    --wp-z-100: 15 23 42;
+    --wp-z-50: 2 6 23;
+}
+html.dark {
+    --wp-canvas: 11 15 25;
+    --wp-z-950: 17 24 39;
+    --wp-z-900: 26 35 53;
+    --wp-z-800: 38 51 77;
+    --wp-z-700: 59 130 246;
+    --wp-z-600: 100 116 139;
+    --wp-z-500: 148 163 184;
+    --wp-z-400: 168 181 202;
+    --wp-z-300: 203 213 225;
+    --wp-z-200: 226 232 240;
+    --wp-z-100: 243 246 252;
+    --wp-z-50: 255 255 255;
+}
+
+@theme {
+  --color-petrol: #023f46;
+  --color-petrol-50: #eef7f8;
+  --color-petrol-100: #d5ecef;
+  --color-petrol-200: #aedae0;
+  --color-petrol-300: #78bfc9;
+  --color-petrol-400: #3e9ca9;
+  --color-petrol-500: #177d8b;
+  --color-petrol-600: #0a616d;
+  --color-petrol-700: #023f46;
+  --color-petrol-800: #033137;
+  --color-petrol-900: #032327;
+  --color-petrol-950: #021518;
+  /* /legacy remaps zinc to its own palette */
+  --color-zinc-50: rgb(var(--wp-z-50));
+  --color-zinc-100: rgb(var(--wp-z-100));
+  --color-zinc-200: rgb(var(--wp-z-200));
+  --color-zinc-300: rgb(var(--wp-z-300));
+  --color-zinc-400: rgb(var(--wp-z-400));
+  --color-zinc-500: rgb(var(--wp-z-500));
+  --color-zinc-600: rgb(var(--wp-z-600));
+  --color-zinc-700: rgb(var(--wp-z-700));
+  --color-zinc-800: rgb(var(--wp-z-800));
+  --color-zinc-900: rgb(var(--wp-z-900));
+  --color-zinc-950: rgb(var(--wp-z-950));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+}
+
+/* Proportional rem-based font scaling for arbitrary small text classes so XS/S/M/L/XL scales everything */
+.text-\[10px\] {
+  font-size: 0.65rem !important;
+  line-height: 1.35 !important;
+}
+.text-\[11px\] {
+  font-size: 0.72rem !important;
+  line-height: 1.4 !important;
+}
+
+/* Light mode contrast enhancement for semantic status texts */
+html.light .text-emerald-400 {
+  color: #047857 !important;
+}
+html.light .text-amber-400 {
+  color: #b45309 !important;
+}
+html.light .text-red-400 {
+  color: #b91c1c !important;
+}
+html.light .text-sky-400 {
+  color: #023F46 !important;
+}
+
+/* Scrollbars themed from the palette */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent) transparent;
+}
+
+/* driver.js tour, themed with app tokens */
+.driver-popover.wp-tour {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  font-family: inherit;
+  max-width: 340px;
+  padding: 16px;
+}
+.driver-popover.wp-tour .driver-popover-title { font-size: 15px; font-weight: 600; font-family: inherit; }
+.driver-popover.wp-tour .driver-popover-description { font-size: 13px; line-height: 1.5; color: var(--muted-foreground); font-family: inherit; }
+.driver-popover.wp-tour .driver-popover-progress-text { font-family: var(--font-mono, ui-monospace); font-size: 12px; color: var(--muted-foreground); }
+.driver-popover.wp-tour .driver-popover-footer button {
+  text-shadow: none;
+  font: inherit;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+.driver-popover.wp-tour .driver-popover-footer .driver-popover-next-btn {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.driver-popover.wp-tour .driver-popover-close-btn { color: var(--muted-foreground); }
+.driver-popover.wp-tour .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: var(--popover); }
+.driver-popover.wp-tour .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: var(--popover); }
+.driver-popover.wp-tour .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: var(--popover); }
+.driver-popover.wp-tour .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: var(--popover); }
