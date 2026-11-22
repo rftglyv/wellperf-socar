@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { ArrowRight, Layers, Maximize2, Minimize2, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowRight, Layers, Maximize2, Minimize2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { EngineStatus, fmt } from "./api";
 import { SectionHead, useReveal } from "./ui";
 import { usePrefs } from "./prefs";
@@ -45,7 +45,6 @@ interface Props {
 
 export function StepTwin({ status, well, setWell, goVFM, goPTA }: Props) {
   const { t } = usePrefs();
-  const [rotate, setRotate] = useState(true);
   const [geo, setGeo] = useState(true);
   const [resetKey, setResetKey] = useState(0);
   const [zoomKey, setZoomKey] = useState({ n: 0, f: 1 });
@@ -97,9 +96,6 @@ export function StepTwin({ status, well, setWell, goVFM, goPTA }: Props) {
         lead={t("tw_lead")}
         actions={
           <>
-            <Toggle variant="outline" size="sm" pressed={rotate} onPressedChange={setRotate} className="px-2.5">
-              {rotate ? <Pause /> : <Play />} {t("twin_rotate")}
-            </Toggle>
             <Toggle variant="outline" size="sm" pressed={geo} onPressedChange={setGeo} className="px-2.5">
               <Layers /> {t("twin_geo")}
             </Toggle>
@@ -142,7 +138,7 @@ export function StepTwin({ status, well, setWell, goVFM, goPTA }: Props) {
             <FieldTwin
               wells={twinWells}
               background="#0a1724"
-              autoRotate={rotate}
+              autoRotate={false}
               showGeology={geo}
               resetKey={resetKey}
               zoomKey={zoomKey}
@@ -157,7 +153,7 @@ export function StepTwin({ status, well, setWell, goVFM, goPTA }: Props) {
             {[
               ["#e8b21a", t("twin_l_jacket")],
               ["#4a2709", t("twin_l_res")],
-              ["#ffb23e", t("twin_l_flow")],
+              ["#5eead4", t("twin_l_flow")],
             ].map(([c, l]) => (
               <span key={c} className="inline-flex items-center gap-1.5">
                 <i className="inline-block size-2 rounded-sm" style={{ background: c }} />

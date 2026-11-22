@@ -389,8 +389,8 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     scene.background = new THREE.Color(background);
 
     const camera = new THREE.PerspectiveCamera(34, W() / H(), 1, 4000);
-    const HOME_POS = new THREE.Vector3(360, 70, 420);
-    const HOME_TGT = new THREE.Vector3(5, -120, 5);
+    const HOME_POS = new THREE.Vector3(110, 240, 520);
+    const HOME_TGT = new THREE.Vector3(30, -80, 25);
     camera.position.copy(HOME_POS);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -743,10 +743,10 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     WELLS.forEach((name, i) => {
       const slot = new THREE.Vector3(-2.4 + (i % 5) * 1.2, 25, -0.6 + Math.floor(i / 5) * 2.4 + 1);
       const head = PLATFORM.clone().add(slot);
-      const ang = -0.15 + (i / (WELLS.length - 1)) * 1.75 + (r() - 0.5) * 0.12;
-      const rad = 18 + r() * 48;
-      const tx = DOME.x + Math.cos(ang) * rad * 1.15 - 20;
-      const tz = DOME.z + Math.sin(ang) * rad * 0.75 - 5;
+      const ang = (i / WELLS.length) * Math.PI * 2 + (r() - 0.5) * 0.2;
+      const rad = i % 2 ? 40 : 24;
+      const tx = DOME.x + Math.cos(ang) * rad * 1.1;
+      const tz = DOME.z + Math.sin(ang) * rad * 0.72;
       const ty = domeTop(tx, tz) - 10;
       const dir = new THREE.Vector3(tx - head.x, 0, tz - head.z).normalize();
       const pts = [
@@ -759,7 +759,10 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
       ];
       const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
       curves[name] = curve;
-      const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 220, 0.9, 10, false), M.casing.clone());
+      const mesh = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 220, 0.6, 8, false),
+        new THREE.MeshStandardMaterial({ color: 0x5eead4, emissive: 0x0b3b36, metalness: 0.2, roughness: 0.4 })
+      );
       mesh.userData.well = name;
       mesh.castShadow = true;
       scene.add(mesh);
@@ -793,7 +796,7 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
 
     // oil flowing up each well
     const PER = 14;
-    const flow = new THREE.InstancedMesh(new THREE.SphereGeometry(0.75, 8, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.8, 1.5, 0.35) }), WELLS.length * PER);
+    const flow = new THREE.InstancedMesh(new THREE.SphereGeometry(0.75, 8, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 2.4, 2.1) }), WELLS.length * PER);
     flow.frustumCulled = false;
     scene.add(flow);
     const phase = Array.from({ length: WELLS.length * PER }, (_, k) => (k % PER) / PER + r() * 0.02);
@@ -825,6 +828,8 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
           m.scale.setScalar(R.base);
         });
         speed[name] = 0.02 + f * 0.07;
+        const tube = wellMeshes.find((m) => m.userData.well === name);
+        if (tube) (tube.material as THREE.MeshStandardMaterial).color.copy(new THREE.Color(0x1e5f66).lerp(new THREE.Color(0x7ff5e3), f));
       });
     };
     applyWells(wellsRef.current);
@@ -838,7 +843,7 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
       wellMeshes.forEach((m) => {
         const mat = m.material as THREE.MeshStandardMaterial;
         const w = m.userData.well as string;
-        mat.emissive.set(w === hovered ? 0x8a5a10 : w === selectedWell ? 0xb87a12 : 0x000000);
+        mat.emissive.set(w === hovered ? 0x2f8f86 : w === selectedWell ? 0x45c4b8 : 0x0b3b36);
       });
     const onMove = (e: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
