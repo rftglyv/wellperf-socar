@@ -112,16 +112,16 @@ function waterNormals() {
 }
 
 const STRATA: [number, string][] = [
-  // [thickness in diorama units from the seabed down, colour]
-  [18, "#8b7558"],
-  [34, "#a88d64"],
-  [30, "#a39f8f"],
-  [42, "#57504a"],
-  [8, "#3f3a35"],
-  [24, "#3b2615"], // reservoir: oil-saturated sand
-  [18, "#706852"],
-  [46, "#463f39"],
-  [44, "#5c524a"],
+  // [thickness in diorama units from the seabed down, colour] — survey-section palette, not photo-real sand
+  [18, "#2a3442"],
+  [34, "#323e4f"],
+  [30, "#3b4a5d"],
+  [42, "#29323f"],
+  [8, "#1f2631"],
+  [24, "#7a4b16"], // reservoir: oil-saturated sand
+  [18, "#344152"],
+  [46, "#262e3a"],
+  [44, "#1d242e"],
 ];
 
 function strataTexture() {
@@ -135,26 +135,51 @@ function strataTexture() {
     const hh = (t / total) * H;
     g.fillStyle = col;
     g.fillRect(0, y, W, hh + 1);
-    // laminations
-    for (let k = 0; k < hh / 3; k++) {
+    // fine bedding hairlines
+    for (let k = 0; k < hh / 7; k++) {
       const yy = y + r() * hh;
-      g.strokeStyle = `rgba(${r() > 0.5 ? "255,255,255" : "0,0,0"},${0.03 + r() * 0.06})`;
-      g.lineWidth = 0.5 + r() * 1.5;
+      g.strokeStyle = `rgba(160,190,220,${0.03 + r() * 0.05})`;
+      g.lineWidth = 0.6;
       g.beginPath();
       g.moveTo(0, yy);
-      for (let x = 0; x <= W; x += 64) g.lineTo(x, yy + Math.sin(x * 0.01 + li) * 2 + (r() - 0.5) * 2);
+      for (let x = 0; x <= W; x += 64) g.lineTo(x, yy + Math.sin(x * 0.008 + li) * 3);
       g.stroke();
     }
-    // grain speckle
-    for (let k = 0; k < (W * hh) / 90; k++) {
-      g.fillStyle = `rgba(${r() > 0.5 ? "255,240,220" : "20,12,6"},${0.05 + r() * 0.12})`;
-      g.fillRect(r() * W, y + r() * hh, 1 + r() * 2, 1 + r() * 1.5);
+    if (li === 5) {
+      // reservoir: hatch pattern like a log track
+      g.strokeStyle = "rgba(255,190,90,0.22)";
+      g.lineWidth = 1;
+      for (let x = -hh; x < W; x += 14) {
+        g.beginPath();
+        g.moveTo(x, y + hh);
+        g.lineTo(x + hh, y);
+        g.stroke();
+      }
     }
-    // boundary
-    g.fillStyle = "rgba(0,0,0,0.35)";
-    g.fillRect(0, y + hh - 1, W, 1.5);
+    // formation top: bright survey line
+    g.fillStyle = li === 5 ? "rgba(255,196,110,0.9)" : "rgba(120,200,230,0.45)";
+    g.fillRect(0, y, W, li === 5 ? 2.5 : 1.2);
     y += hh;
   });
+  // measurement grid + depth ticks (TVDSS)
+  g.strokeStyle = "rgba(140,200,230,0.10)";
+  g.lineWidth = 1;
+  for (let x = 0; x <= W; x += 64) {
+    g.beginPath();
+    g.moveTo(x, 0);
+    g.lineTo(x, H);
+    g.stroke();
+  }
+  g.font = "600 18px ui-monospace, Menlo, monospace";
+  g.textBaseline = "middle";
+  for (let d = 1000; d <= 3000; d += 250) {
+    const yy = ((d - 600) / (3200 - 600)) * H;
+    const major = d % 500 === 0;
+    g.fillStyle = `rgba(170,215,235,${major ? 0.7 : 0.35})`;
+    g.fillRect(0, yy, major ? 28 : 14, 1.5);
+    g.fillRect(W - (major ? 28 : 14), yy, major ? 28 : 14, 1.5);
+    if (major) g.fillText(`${d} m`, 36, yy);
+  }
   return tex(c);
 }
 
@@ -495,7 +520,7 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
     };
     earthBox(-BX, 0, -BZ, BZ);
     earthBox(0, BX, -BZ, 0);
-    const sand = new THREE.MeshStandardMaterial({ map: noiseTexture("#a48d6a", 0.35, [6, 4], 9), roughness: 1 });
+    const sand = new THREE.MeshStandardMaterial({ map: noiseTexture("#3a4656", 0.3, [6, 4], 9), roughness: 1 });
     const slab = new THREE.Mesh(new THREE.BoxGeometry(BX * 2, SLAB, BZ * 2), [sand, sand, sand, hidden, sand, sand]);
     slab.position.y = SEABED - SLAB / 2;
     slab.receiveShadow = true;
@@ -528,8 +553,25 @@ export default function FieldTwin({ wells, background, autoRotate, showGeology, 
       side: THREE.DoubleSide,
       map: noiseTexture("#4a2f17", 0.45, [5, 3], 21),
     });
-    surface(0, 1, oilMat);
+    const top = surface(0, 1, oilMat);
     surface(-24, 1, oilMat);
+    {
+      // structure map on the reservoir top: colour by height + contour bands
+      const p = top.geometry.attributes.position;
+      const cols: number[] = [];
+      const lo = DOME.top - DOME.amp;
+      const deep = new THREE.Color(0x0c3a4a);
+      const mid = new THREE.Color(0x1f8a8a);
+      const crest = new THREE.Color(0xffb347);
+      for (let i = 0; i < p.count; i++) {
+        const t = Math.min(1, Math.max(0, (p.getY(i) - lo) / (DOME.amp * 2)));
+        const c = t < 0.5 ? deep.clone().lerp(mid, t * 2) : mid.clone().lerp(crest, (t - 0.5) * 2);
+        const band = Math.abs(((t * 10) % 1) - 0.5) < 0.06 ? 1.35 : 1;
+        cols.push(c.r * band, c.g * band, c.b * band);
+      }
+      top.geometry.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
+      top.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.05, emissive: 0x0a0602, side: THREE.DoubleSide, transparent: true, opacity: 0.95 });
+    }
     const owc = new THREE.Mesh(new THREE.PlaneGeometry(BX, BZ), new THREE.MeshStandardMaterial({ color: 0x1e7891, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
     owc.rotation.x = -Math.PI / 2;
     owc.position.set(BX / 2, DOME.top - DOME.amp - 6, BZ / 2);
